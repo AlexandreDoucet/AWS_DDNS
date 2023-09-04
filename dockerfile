@@ -21,6 +21,14 @@ run ./aws/install
 copy /source/requirements.txt .
 run pip install -r requirements.txt
 
+
+# Define an argument to pass HOSTED_ZONE_ID during runtime
+ARG HOSTED_ZONE_ID
+
+# Set the HOSTED_ZONE_ID as an environment variable
+ENV HOSTED_ZONE_ID=${HOSTED_ZONE_ID}
+
+
 copy /source .
 
 run chmod +x UploadToAWS.sh

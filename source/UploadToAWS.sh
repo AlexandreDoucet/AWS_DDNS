@@ -26,7 +26,7 @@ cat > r53-update.json << __EOF__
 __EOF__
 
 
-aws route53 change-resource-record-sets --hosted-zone-id Z103409721PN3DZHMI40A --change-batch file://r53-update.json 
+aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --change-batch file://r53-update.json
 
 
 rm -f -- /tmp/r52-update.json
