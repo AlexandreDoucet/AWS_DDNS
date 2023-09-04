@@ -7,6 +7,26 @@ import subprocess
 
 #subprocess.call(['aws','configure'])
 
+def check_internet_connection():
+    try:
+        # Use the ping command to check if a well-known website is reachable
+        subprocess.check_call(["ping", "-c", "1", "www.google.com"])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
+while True:
+    timeToWait = 10
+    if check_internet_connection():
+        print("Internet connection is available.")
+        break
+    else:
+        print("No internet connection. Waiting for "+str(timeToWait)+" seconds...")
+        time.sleep(timeToWait)
+
+
+
 # Check if AWS CLI is already configured
 try:
     subprocess.check_call(['aws', 'configure', 'get', 'aws_access_key_id'])
