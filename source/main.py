@@ -52,9 +52,9 @@ def create_aws_profile(aws_user, aws_key):
 	try:
 		subprocess.run(["aws", "configure", "set", "aws_access_key_id", aws_user, "--profile", CONFIG["AWS_PROFILE_NAME"]])
 		subprocess.run(["aws", "configure", "set", "aws_secret_access_key", aws_key, "--profile", CONFIG["AWS_PROFILE_NAME"]])
-		print("AWS profile '%s' created successfully.", CONFIG["AWS_PROFILE_NAME"])
+		print("AWS profile "+ CONFIG["AWS_PROFILE_NAME"] +" created successfully.")
 	except Exception as e:
-		print("Failed to create AWS profile: %s", str(e))
+		print("Failed to create AWS profile: " + str(e))
 
 def validate_aws_profile():
 	aws_key_valid = False
@@ -83,7 +83,7 @@ def main():
 	wait_for_internet_connection(False)
 	validate_aws_profile()
 
-	print("\nProgram started: %s", str(datetime.datetime.today()))
+	print("\nProgram started: " + str(datetime.datetime.today()))
 
 	record_ip = '0.0.0.0'
 	last_ip = ""
@@ -103,12 +103,13 @@ def main():
 			last_check_time = current_time
 
 			if record_ip != ip:
-				print("IP should be updated from: %s to %s", record_ip, ip)
+				print("IP should be updated from:" +str(record_ip)+" to " + str(ip))
 				subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
-				print("Record Updated: %s", str(datetime.datetime.today()))
+				print("Record Updated: " + str(datetime.datetime.today()) )
 				time.sleep(1)
 			else:
-				print("No update required: %s\n", str(datetime.datetime.today()))
+				print("No update required : " + str(datetime.datetime.today()))
+			print("\n")
 
 		time.sleep(120)
 
