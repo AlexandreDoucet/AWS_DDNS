@@ -1,19 +1,47 @@
-import time 
+import time
 import requests
 import socket
 import datetime
 import subprocess
 import os
+import logging
 
-#subprocess.call(['aws','configure'])
+# Configuration
+CONFIG = {
+	"SYNC_INTERVAL_SECONDS": float(os.environ.get("SYNC_INTERVAL_SECONDS", 3600)),
+	"AWS_PROFILE_NAME": "myprofile",
+	"UPLOAD_SCRIPT": "UploadToAWS.sh",
+}
+
+
+link = 'https://checkip.amazonaws.com'
+domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com') 
+
+
+# Logging configuration
+logging.basicConfig(filename="ip_updater.log", level=logging.INFO)
 
 def check_internet_connection():
-    try:
-        # Use the ping command to check if a well-known website is reachable
-        subprocess.check_call(["ping", "-c", "1", "www.google.com"])
-        return True
-    except subprocess.CalledProcessError:
-        return False
+	try:
+		subprocess.check_call(["ping", "-c", "1", "www.google.com"])
+		return True
+	except subprocess.CalledProcessError:
+		return False
+
+# Causes the program to stall if the internet is down.
+def wait_for_internet_connection():
+	time_to_wait = 20
+	already_printed = False
+	
+	while True:
+		if check_internet_connection():
+			logging.info("Internet connection is available.")
+			break
+		else:
+			if not already_printed:
+				logging.warning("No internet available")
+				already_printed = True
+			time.sleep(time_to_wait)
 
 def get_aws_profile_info():
 	aws_user = os.environ.get("IAM_USER")
@@ -22,79 +50,67 @@ def get_aws_profile_info():
 
 def create_aws_profile(aws_user, aws_key):
 	try:
-		# Use subprocess to execute the aws configure set commands.
-		subprocess.run(["aws", "configure", "set", "aws_access_key_id", aws_user, "--profile", "myprofile"])
-		subprocess.run(["aws", "configure", "set", "aws_secret_access_key", aws_key, "--profile", "myprofile"])
-		print("AWS profile 'myprofile' created successfully.")
+		subprocess.run(["aws", "configure", "set", "aws_access_key_id", aws_user, "--profile", AWS_PROFILE_NAME])
+		subprocess.run(["aws", "configure", "set", "aws_secret_access_key", aws_key, "--profile", AWS_PROFILE_NAME])
+		logging.info("AWS profile '%s' created successfully.", AWS_PROFILE_NAME)
 	except Exception as e:
-		print(f"Failed to create AWS profile: {str(e)}")
+		logging.error("Failed to create AWS profile: %s", str(e))
+
+def validate_aws_profile():
+	aws_key_valid = False
+	while not aws_key_valid:
+		try:
+			subprocess.check_call(["aws", "configure", "get", "aws_access_key_id"])
+			logging.info("AWS CLI is already configured with IAM credentials.")
+			aws_key_valid = True  # The key is valid, exit the loop
+		except subprocess.CalledProcessError:
+			logging.warning("AWS CLI is not configured.")
+
+			aws_user, aws_key = get_aws_profile_info()			
+			if aws_user and aws_key:
+				logging.info("Using AWS credentials from environment variables.")
+				create_aws_profile(aws_user, aws_key)
+				aws_key_valid = True  # The key is now configured, exit the loop
+			else:
+				logging.error("AWS_USER and/or AWS_KEY environment variables not set.")
+				logging.warning("AWS CLI is not configured. Running 'aws configure'...\n")
+				subprocess.call(["aws", "configure"])
 
 
-time_to_wait = 20
-alreadyPrinted = False
-while True:
 
-	if check_internet_connection() :
-		print("Internet connection is available.")
-		break
-	else:
-		if not alreadyPrinted:
-			print("No internet available\r\t\t\t\r")
-			alreadyPrinted = True
-		time.sleep(time_to_wait)
+def main():
 
-try:
-	subprocess.check_call(['aws', 'configure', 'get', 'aws_access_key_id'])
-	print("AWS CLI is already configured with IAM credentials.")
-except subprocess.CalledProcessError:
-	print("AWS CLI is not configured. Running 'aws configure'...")
+	wait_for_internet_connection()
+	validate_aws_profile()
 
-	aws_user, aws_key = get_aws_profile_info()
+	logging.info("\nProgram started: %s", str(datetime.datetime.today()))
 
-	if aws_user and aws_key:
-		print("Using AWS credentials from environment variables.")
-		create_aws_profile(aws_user, aws_key)
-	else:
-		print("AWS_USER and/or AWS_KEY environment variables not set. Please set them or run 'aws configure' manually.")
-		print("AWS CLI is not configured. Running 'aws configure'...")
-		subprocess.call(['aws', 'configure'])
+	record_ip = '0.0.0.0'
+	last_ip = ""
+	last_check_time = time.time()
+	delay_seconds = CONFIG["SYNC_INTERVAL_SECONDS"]
 
+	while True:
+		wait_for_internet_connection()
 
-print("\n\nThis prorgram will querry a service and an DNS name, compare them and return wether the record should be updated")
-print("Started : " + str(datetime.datetime.today()) + "\n~~~~~~~~~~~")
-link = 'https://checkip.amazonaws.com'
-link2 = 'home.techtinkerhub.com'
+		ip = requests.get(link).text.strip()
+		current_time = time.time()
 
-delay = float(os.environ.get("SYNC_INTERVAL_SECONDS"))
-uploadScript = 'UploadToAWS.sh'
+		if last_ip != ip or (current_time - last_check_time) >= delay_seconds:
+			logging.info("IP change detected or interval passed.")
+			record_ip = socket.gethostbyname(domain)
+			last_ip = ip
+			last_check_time = current_time
 
-recordIP = '0.0.0.0'
+			if record_ip != ip:
+				logging.info("IP should be updated from: %s to %s", record_ip, ip)
+				subprocess.call(["sh", UPLOAD_SCRIPT])
+				logging.info("Record Updated: %s", str(datetime.datetime.today()))
+				time.sleep(1)
+			else:
+				logging.info("No update required: %s", str(datetime.datetime.today()))
 
-lastIP = ""
-last_check_time = time.time()
-delay_seconds = delay
+		time.sleep(120)
 
-
-while True:
-	ip = requests.get(link).text.strip()
-	current_time = time.time()
-    
-    # Check if the IP has changed or an hour has passed
-	if lastIP != ip or (current_time - last_check_time) >= delay_seconds:  # 3600 seconds = 1 hour
-		# Polled IP has changed or an hour has passed
-		print('\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n')
-		recordIP = socket.gethostbyname(link2)
-		lastIP = ip
-		last_check_time = current_time
-
-		if recordIP != ip:
-			print("IP should be updated from :" + str(recordIP) + " to " + str(ip))
-			subprocess.call(['sh', uploadScript])
-			print("Record Updated : " + str(datetime.datetime.today()))
-			time.sleep(1)
-		else:
-			print("No update required : " + str(datetime.datetime.today()))
-
-		print('\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n')
-	else:
-        	time.sleep(60)
+if __name__ == "__main__":
+	main()
