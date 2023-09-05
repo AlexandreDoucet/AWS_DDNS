@@ -18,7 +18,6 @@ def check_internet_connection():
 def get_aws_profile_info():
 	aws_user = os.environ.get("IAM_USER")
 	aws_key = os.environ.get("IAM_KEY")
-
 	return aws_user, aws_key
 
 def create_aws_profile(aws_user, aws_key):
@@ -59,31 +58,21 @@ except subprocess.CalledProcessError:
 		print("AWS_USER and/or AWS_KEY environment variables not set. Please set them or run 'aws configure' manually.")
 		print("AWS CLI is not configured. Running 'aws configure'...")
 		subprocess.call(['aws', 'configure'])
-	
-
-'''
-# Check if AWS CLI is already configured
-try:
-    subprocess.check_call(['aws', 'configure', 'get', 'aws_access_key_id'])
-    print("AWS CLI is already configured with IAM credentials.")
-except subprocess.CalledProcessError:
-    print("AWS CLI is not configured. Running 'aws configure'...")
-    subprocess.call(['aws', 'configure'])
-'''
 
 
-print("This prorgram will querry a service and an DNS name, compare them and return wether the record should be updated")
+print("\n\nThis prorgram will querry a service and an DNS name, compare them and return wether the record should be updated")
 print("Started : " + str(datetime.datetime.today()) + "\n~~~~~~~~~~~")
 link = 'https://checkip.amazonaws.com'
 link2 = 'home.techtinkerhub.com'
 
+delay = float(os.environ.get("SYNC_INTERVAL_SECONDS"))
 uploadScript = 'UploadToAWS.sh'
 
 recordIP = '0.0.0.0'
 
 lastIP = ""
 last_check_time = time.time()
-delay_seconds = 3600
+delay_seconds = delay
 
 
 while True:
