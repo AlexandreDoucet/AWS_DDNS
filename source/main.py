@@ -23,19 +23,19 @@ domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com')
 
 def check_internet_connection():
 	try:
-		subprocess.check_call(["ping", "-c", "1", "www.google.com"])
+		subprocess.check_call(["ping", "-c", "1", "www.google.com"], stdout=subprocess.DEVNULL)
 		return True
 	except subprocess.CalledProcessError:
 		return False
 
 # Causes the program to stall if the internet is down.
-def wait_for_internet_connection():
+def wait_for_internet_connection(quiet):
 	time_to_wait = 20
 	already_printed = False
 	
 	while True:
 		if check_internet_connection():
-			print("Internet connection is available.")
+			if(not quiet) :print("Internet connection is available.")
 			break
 		else:
 			if not already_printed:
@@ -80,7 +80,7 @@ def validate_aws_profile():
 
 def main():
 
-	wait_for_internet_connection()
+	wait_for_internet_connection(False)
 	validate_aws_profile()
 
 	print("\nProgram started: %s", str(datetime.datetime.today()))
@@ -91,7 +91,7 @@ def main():
 	delay_seconds = CONFIG["SYNC_INTERVAL_SECONDS"]
 
 	while True:
-		wait_for_internet_connection()
+		wait_for_internet_connection(True)
 
 		ip = requests.get(link).text.strip()
 		current_time = time.time()
@@ -108,7 +108,7 @@ def main():
 				print("Record Updated: %s", str(datetime.datetime.today()))
 				time.sleep(1)
 			else:
-				print("No update required: %s", str(datetime.datetime.today()))
+				print("No update required: %s\n", str(datetime.datetime.today()))
 
 		time.sleep(120)
 
