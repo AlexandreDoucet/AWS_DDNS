@@ -11,7 +11,7 @@ cat > r53-update.json << __EOF__
       {
         "Action": "UPSERT",
         "ResourceRecordSet": {
-          "Name": "home.techtinkerhub.com",
+          "Name": "${DOMAIN}",
           "Type": "A",
           "TTL": 600,
           "ResourceRecords": [
@@ -26,7 +26,7 @@ cat > r53-update.json << __EOF__
 __EOF__
 
 
-aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --change-batch file://r53-update.json --profile myprofile
+aws route53 change-resource-record-sets --hosted-zone-id $HOSTED_ZONE_ID --change-batch file://r53-update.json --profile $AWS_PROFILE_NAME
 
 
 rm -f -- /tmp/r52-update.json
