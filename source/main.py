@@ -36,13 +36,13 @@ def wait_for_internet_connection(quiet):
 	while True:
 		if check_internet_connection():
 			
-			if(not quiet or not internetConnected) :print("Internet connection is available.")
+			if(not quiet or not internetConnected) :print("Internet connection is available : " +str(datetime.datetime.today()))
 			internetConnected = True
 			break
 		else:
 			internetConnected = False
 			if not already_printed:
-				print("No internet available")
+				print("No internet available : " + str(datetime.datetime.today()))
 				already_printed = True
 			time.sleep(time_to_wait)
 
