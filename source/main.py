@@ -8,7 +8,7 @@ import schedule
 
 # Configuration
 CONFIG = {
-	"CHEDULED_TIME": os.environ.get("SCHEDULED_TIME", "00:00"),
+	"SCHEDULED_TIME": os.environ.get("SCHEDULED_TIME", "00:00"),
 	"AWS_PROFILE_NAME": os.environ.get("AWS_PROFILE_NAME", "myprofile"),
 	"UPLOAD_SCRIPT": "UploadToAWS.sh",
 }
@@ -22,7 +22,7 @@ domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com')
 
 def check_internet_connection():
 	try:
-		subprocess.check_call(["ping", "-n", "1", "www.google.com"], stdout=subprocess.DEVNULL)
+		subprocess.check_call(["ping", "-c", "1", "www.google.com"], stdout=subprocess.DEVNULL)
 		return True
 	except subprocess.CalledProcessError:
 		return False
@@ -30,8 +30,7 @@ def check_internet_connection():
 # Causes the program to stall if the internet is down.
 def wait_for_internet_connection(quiet):
 	time_to_wait = 20
-	already_printed = False
-	
+	already_printed = False	
 	while True:
 		if check_internet_connection():
 			if(not quiet) :print("Internet connection is available.")
@@ -77,13 +76,13 @@ def create_aws_profile(aws_user, aws_key):
 
 
 
-def run_job(mut_last_ip):
+def run_job(mut_last_ip, forceCheck):
 	wait_for_internet_connection(True)
 	ip = requests.get(link).text.strip()
 	last_ip = mut_last_ip[0]
 
 	if last_ip != ip:
-		print("IP change detected or interval passed.")
+		print("IP change detected")
 		record_ip = socket.gethostbyname(domain)
 		last_ip = ip
 
@@ -100,10 +99,12 @@ def run_job(mut_last_ip):
 
 
 def main():
+
+	print("\nProgram started: " + str(datetime.datetime.today()))
+
 	wait_for_internet_connection(False)
 	aws_user,aws_key = get_aws_profile_info()
-	#create_aws_profile(aws_user, aws_key)
-	print("\nProgram started: " + str(datetime.datetime.today()))
+	create_aws_profile(aws_user, aws_key)
 
 	last_ip = [""]
 
@@ -111,11 +112,13 @@ def main():
 	scheduled_time = CONFIG["SCHEDULED_TIME"]  # Replace with your desired time in HH:MM format.
 
 	# Schedule the job to run at the specified time.
-	schedule.every().day.at(scheduled_time).do(run_job,last_ip)
+	schedule.every().day.at(scheduled_time).do(run_job,last_ip,True)
+	schedule.every(2).minutes.do(run_job,last_ip,False)
 
+	print("\nLooks like we're good to do !\n")
 	while True:
 		schedule.run_pending()
-		time.sleep(1)
+		time.sleep(20)
 
 
 if __name__ == "__main__":
