@@ -4,12 +4,12 @@ import socket
 import datetime
 import subprocess
 import os
-
+import schedule
 
 # Configuration
 CONFIG = {
-	"SYNC_INTERVAL_SECONDS": float(os.environ.get("SYNC_INTERVAL_SECONDS", 3600)),
-	"AWS_PROFILE_NAME": "myprofile",
+	"CHEDULED_TIME": os.environ.get("SCHEDULED_TIME", "00:00"),
+	"AWS_PROFILE_NAME": os.environ.get("AWS_PROFILE_NAME", "myprofile"),
 	"UPLOAD_SCRIPT": "UploadToAWS.sh",
 }
 
@@ -17,13 +17,12 @@ CONFIG = {
 link = 'https://checkip.amazonaws.com'
 domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com') 
 
-
 # Logging configuration
 #logging.basicConfig(filename="ip_updater.log", level=logging.INFO)
 
 def check_internet_connection():
 	try:
-		subprocess.check_call(["ping", "-c", "1", "www.google.com"], stdout=subprocess.DEVNULL)
+		subprocess.check_call(["ping", "-n", "1", "www.google.com"], stdout=subprocess.DEVNULL)
 		return True
 	except subprocess.CalledProcessError:
 		return False
@@ -56,7 +55,6 @@ def create_aws_profile(aws_user, aws_key):
 	except Exception as e:
 		print("Failed to create AWS profile: " + str(e))
 
-def validate_aws_profile():
 	aws_key_valid = False
 	while not aws_key_valid:
 		try:
@@ -78,40 +76,47 @@ def validate_aws_profile():
 
 
 
+
+def run_job(mut_last_ip):
+	wait_for_internet_connection(True)
+	ip = requests.get(link).text.strip()
+	last_ip = mut_last_ip[0]
+
+	if last_ip != ip:
+		print("IP change detected or interval passed.")
+		record_ip = socket.gethostbyname(domain)
+		last_ip = ip
+
+		if record_ip != ip:
+			print("IP should be updated from:" + str(record_ip) + " to " + str(ip))
+			subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
+			print("Record Updated: " + str(datetime.datetime.today()))
+		else:
+			print("No update required : " + str(datetime.datetime.today()))
+		print("\n")
+	mut_last_ip[0] = last_ip
+
+
+
+
 def main():
-
 	wait_for_internet_connection(False)
-	validate_aws_profile()
-
+	aws_user,aws_key = get_aws_profile_info()
+	#create_aws_profile(aws_user, aws_key)
 	print("\nProgram started: " + str(datetime.datetime.today()))
 
-	record_ip = '0.0.0.0'
-	last_ip = ""
-	last_check_time = time.time()
-	delay_seconds = CONFIG["SYNC_INTERVAL_SECONDS"]
+	last_ip = [""]
+
+	# Define the specific time you want the code to run (replace with your desired time).
+	scheduled_time = CONFIG["SCHEDULED_TIME"]  # Replace with your desired time in HH:MM format.
+
+	# Schedule the job to run at the specified time.
+	schedule.every().day.at(scheduled_time).do(run_job,last_ip)
 
 	while True:
-		wait_for_internet_connection(True)
+		schedule.run_pending()
+		time.sleep(1)
 
-		ip = requests.get(link).text.strip()
-		current_time = time.time()
-
-		if last_ip != ip or (current_time - last_check_time) >= delay_seconds:
-			print("IP change detected or interval passed.")
-			record_ip = socket.gethostbyname(domain)
-			last_ip = ip
-			last_check_time = current_time
-
-			if record_ip != ip:
-				print("IP should be updated from:" +str(record_ip)+" to " + str(ip))
-				subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
-				print("Record Updated: " + str(datetime.datetime.today()) )
-				time.sleep(1)
-			else:
-				print("No update required : " + str(datetime.datetime.today()))
-			print("\n")
-
-		time.sleep(120)
 
 if __name__ == "__main__":
 	main()
