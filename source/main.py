@@ -16,6 +16,8 @@ CONFIG = {
 
 link = 'https://checkip.amazonaws.com'
 domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com') 
+internetConnected = False
+
 
 # Logging configuration
 #logging.basicConfig(filename="ip_updater.log", level=logging.INFO)
@@ -33,9 +35,12 @@ def wait_for_internet_connection(quiet):
 	already_printed = False	
 	while True:
 		if check_internet_connection():
-			if(not quiet) :print("Internet connection is available.")
+			
+			if(not quiet or not internetConnected) :print("Internet connection is available.")
+			internetConnected = True
 			break
 		else:
+			internetConnected = False
 			if not already_printed:
 				print("No internet available")
 				already_printed = True
