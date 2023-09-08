@@ -83,7 +83,7 @@ def run_job(mut_last_ip, forceCheck):
 
 	if last_ip != ip or forceCheck:
 		if(last_ip != ip ):
-			print("IP change detected or scheduled update")
+			print("IP change detected")
 		elif(forceCheck):
 			print("Scheduled update")
 			
