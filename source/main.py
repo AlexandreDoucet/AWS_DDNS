@@ -81,8 +81,12 @@ def run_job(mut_last_ip, forceCheck):
 	ip = requests.get(link).text.strip()
 	last_ip = mut_last_ip[0]
 
-	if last_ip != ip:
-		print("IP change detected")
+	if last_ip != ip or forceCheck:
+		if(last_ip != ip ):
+			print("IP change detected or scheduled update")
+		elif(forceCheck):
+			print("Scheduled update")
+			
 		record_ip = socket.gethostbyname(domain)
 		last_ip = ip
 
