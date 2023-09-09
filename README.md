@@ -82,7 +82,7 @@ This command does the following:
 The DDNS service will run periodically based on the SCHEDULED_TIME specified in your environment variables. If no time is specifide or the format is invalid, it will default as 00:00 (Midnight)
 You can monitor the service's logs to see if it's updating the DNS records correctly:
 
-	docker logs -f ddns-service 
+	docker logs -f compare_dns 
 
 ##Contributing
 Feel free to contribute to this project by opening issues or submitting pull requests. Your contributions are welcome!
