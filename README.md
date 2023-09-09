@@ -11,20 +11,35 @@ Before running the DDNS service, make sure you have the following prerequisites 
 
 ## Getting Started
 1. Clone this GitHub repository to your local machine:
-git clone https://github.com/yourusername/ddns-service.git
+git clone https://github.com/AlexandreDoucet/AWS_DDNS.git
 
 2. Navigate to the project directory:
+	cd ddns-service
 
-3. cd ddns-service
-Build the Docker container using the provided Dockerfile:
-
-
-docker build -t ddns-service .
+3. Build the Docker container using the provided Dockerfile:
+	docker build -t ddns-service .
 
 ## Configuration
 
 ### Environment Variables
 Before running the Docker container, you need to set the following environment variables in the Docker runtime. You can do this by creating an .env file or by passing these variables directly to the docker run command:
+Please note that having the IAM_KEY set as en evironenemnt variable is not very secure but will do for now.
+
+#### Passing variables directly to the docker run command :
+
+docker run -e DOMAIN="DOMAIN_TO_COMPARE_AND_UPDATE_TO" \
+           -e HOSTED_ZONE_ID="your-hosted-zone-id" \
+           -e IAM_USER="iam-user-access-key" \
+           -e IAM_KEY="Your AWS IAM user secret key" \
+           -e SCHEDULED_TIME="00:00" \
+           -e AWS_PROFILE_NAME="myprofile" \
+           --restart=always \
+           --name CompareDNS \
+           -d \
+           --log-driver json-file \
+           --log-opt max-size=10m \
+           --log-opt max-file=3 \
+           compare_dns
 
 	HOSTED_ZONE_ID: Your AWS Route 53 hosted zone ID.
 	IAM_USER: Your AWS IAM user access key.
@@ -33,7 +48,7 @@ Before running the Docker container, you need to set the following environment v
 	DOMAIN: The domain you want to update in your Route 53 hosted zone.
 	AWS_PROFILE_NAME: An optional AWS CLI profile name (default is "myprofile").
 	
-## Example .env File
+#### Example .env File
 Create an .env file in the project directory with the following content:
 
 	HOSTED_ZONE_ID=your-hosted-zone-id
@@ -46,25 +61,39 @@ Create an .env file in the project directory with the following content:
 
 Run the Docker container with the following command, ensuring that you mount the AWS CLI configuration and credentials files:
 
-docker run -d --name ddns-service \
-    --env-file .env \
-    -v ~/.aws:/root/.aws \
-    ddns-service
+docker run --restart=always \
+           --name CompareDNS \
+           -d \
+       	   --env-file .env \
+           --log-driver json-file \
+           --log-opt max-size=10m \
+           --log-opt max-file=3 \
+           compare_dns
 
 This command does the following:
 
 	-d: Runs the container in detached mode.
 	--name ddns-service: Assigns a name to the running container.
 	--env-file .env: Reads environment variables from the .env file.
-	-v ~/.aws:/root/.aws: Mounts your AWS CLI configuration and credentials files for the container to access AWS services.
 	ddns-service: The name of the Docker image.
 
 ## Monitoring
 The DDNS service will run periodically based on the SCHEDULED_TIME specified in your environment variables. 
 You can monitor the service's logs to see if it's updating the DNS records correctly:
 
-docker logs ddns-service -f
+	docker logs -f ddns-service 
 
 ##Contributing
 Feel free to contribute to this project by opening issues or submitting pull requests. Your contributions are welcome!
+
+
+
+
+
+
+
+
+
+
+
 
