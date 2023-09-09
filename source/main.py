@@ -16,7 +16,6 @@ CONFIG = {
 
 link = 'https://checkip.amazonaws.com'
 domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com') 
-internetConnected = False
 
 
 # Logging configuration
@@ -36,11 +35,9 @@ def wait_for_internet_connection(quiet):
 	while True:
 		if check_internet_connection():
 			
-			if(not quiet or not internetConnected) :print("Internet connection is available : " +str(datetime.datetime.today()))
-			internetConnected = True
+			if(not quiet): print("Internet connection is available : " +str(datetime.datetime.today()))
 			break
 		else:
-			internetConnected = False
 			if not already_printed:
 				print("No internet available : " + str(datetime.datetime.today()))
 				already_printed = True
