@@ -8,7 +8,7 @@ import schedule
 
 # Configuration
 CONFIG = {
-	"SCHEDULED_TIME": os.environ.get("SCHEDULED_TIME", "00:00"),
+	"SCHEDULED_TIME": str(os.environ.get("SCHEDULED_TIME", "00:00").strip()),
 	"AWS_PROFILE_NAME": os.environ.get("AWS_PROFILE_NAME", "myprofile"),
 	"UPLOAD_SCRIPT": "UploadToAWS.sh",
 }
@@ -107,7 +107,6 @@ def run_job(mut_last_ip, forceCheck):
 def main():
 
 	print("\nProgram started: " + str(datetime.datetime.today()))
-
 	wait_for_internet_connection(False)
 	aws_user,aws_key = get_aws_profile_info()
 	create_aws_profile(aws_user, aws_key)
@@ -115,10 +114,19 @@ def main():
 	last_ip = [""]
 
 	# Define the specific time you want the code to run (replace with your desired time).
-	scheduled_time = CONFIG["SCHEDULED_TIME"]  # Replace with your desired time in HH:MM format.
+	scheduled_time = CONFIG["SCHEDULED_TIME"].strip()  # Replace with your desired time in HH:MM format.
 
 	# Schedule the job to run at the specified time.
-	schedule.every().day.at(scheduled_time).do(run_job,last_ip,True)
+	try:
+		schedule.every().day.at(scheduled_time).do(run_job,last_ip,True)
+	except Exception as e:
+		scheduled_time="00:00"
+		schedule.every().day.at(scheduled_time).do(run_job,last_ip,True)
+		print(e)
+		print(type(e))
+		print("\n\n")
+
+
 	schedule.every(2).minutes.do(run_job,last_ip,False)
 
 	print("\nLooks like we're good to do !\n")
