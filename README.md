@@ -24,7 +24,7 @@ Before running the DDNS service, make sure you have the following prerequisites 
 
 ### Environment Variables
 Before running the Docker container, you need to set the following environment variables in the Docker runtime. You can do this by creating an .env file or by passing these variables directly to the docker run command:
-Please note that having the IAM_KEY set as en evironenemnt variable is not very secure but will do for now.
+</br>Please note that having the IAM_KEY set as en evironenemnt variable is not very secure but will do for now.
 
 #### Passing variables directly to the docker run command :
 ```
