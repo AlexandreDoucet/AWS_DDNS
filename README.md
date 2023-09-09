@@ -14,9 +14,11 @@ Before running the DDNS service, make sure you have the following prerequisites 
 git clone https://github.com/AlexandreDoucet/AWS_DDNS.git
 
 2. Navigate to the project directory:
+
 	cd ddns-service
 
-3. Build the Docker container using the provided Dockerfile:
+4. Build the Docker container using the provided Dockerfile:
+
 	docker build -t ddns-service .
 
 ## Configuration
@@ -27,48 +29,48 @@ Please note that having the IAM_KEY set as en evironenemnt variable is not very 
 
 #### Passing variables directly to the docker run command :
 
-docker run -e DOMAIN="DOMAIN_TO_COMPARE_AND_UPDATE_TO" \
-           -e HOSTED_ZONE_ID="your-hosted-zone-id" \
-           -e IAM_USER="iam-user-access-key" \
-           -e IAM_KEY="Your AWS IAM user secret key" \
-           -e SCHEDULED_TIME="00:00" \
-           -e AWS_PROFILE_NAME="myprofile" \
-           --restart=always \
-           --name CompareDNS \
-           -d \
-           --log-driver json-file \
-           --log-opt max-size=10m \
-           --log-opt max-file=3 \
-           compare_dns
+	docker run -e DOMAIN="DOMAIN_TO_COMPARE_AND_UPDATE_TO" \
+	           -e HOSTED_ZONE_ID="your-hosted-zone-id" \
+	           -e IAM_USER="iam-user-access-key" \
+	           -e IAM_KEY="Your AWS IAM user secret key" \
+	           -e SCHEDULED_TIME="00:00" \
+	           -e AWS_PROFILE_NAME="myprofile" \
+	           --restart=always \
+	           --name CompareDNS \
+	           -d \
+	           --log-driver json-file \
+	           --log-opt max-size=10m \
+	           --log-opt max-file=3 \
+	           compare_dns
 
-	HOSTED_ZONE_ID: Your AWS Route 53 hosted zone ID.
-	IAM_USER: Your AWS IAM user access key.
-	IAM_KEY: Your AWS IAM user secret key.
-	SCHEDULED_TIME: The time at which you want the code to run in HH:MM format.
-	DOMAIN: The domain you want to update in your Route 53 hosted zone.
-	AWS_PROFILE_NAME: An optional AWS CLI profile name (default is "myprofile").
+HOSTED_ZONE_ID: Your AWS Route 53 hosted zone ID.
+IAM_USER: Your AWS IAM user access key.
+IAM_KEY: Your AWS IAM user secret key.
+SCHEDULED_TIME: The time at which you want the code to run in HH:MM format.
+DOMAIN: The domain you want to update in your Route 53 hosted zone.
+AWS_PROFILE_NAME: An optional AWS CLI profile name (default is "myprofile").
 	
 #### Example .env File
 Create an .env file in the project directory with the following content:
 
-	HOSTED_ZONE_ID=your-hosted-zone-id
-	IAM_USER=your-iam-user-access-key
-	IAM_KEY=your-iam-user-secret-key
-	SCHEDULED_TIME=00:00
-	DOMAIN=your-domain.com
-	AWS_PROFILE_NAME=myprofile
-	Running the DDNS Service
+HOSTED_ZONE_ID=your-hosted-zone-id
+IAM_USER=your-iam-user-access-key
+IAM_KEY=your-iam-user-secret-key
+SCHEDULED_TIME=00:00
+DOMAIN=your-domain.com
+AWS_PROFILE_NAME=myprofile
+Running the DDNS Service
 
 Run the Docker container with the following command, ensuring that you mount the AWS CLI configuration and credentials files:
 
-docker run --restart=always \
-           --name CompareDNS \
-           -d \
-       	   --env-file .env \
-           --log-driver json-file \
-           --log-opt max-size=10m \
-           --log-opt max-file=3 \
-           compare_dns
+	docker run --restart=always \
+	           --name CompareDNS \
+	           -d \
+	       	   --env-file .env \
+	           --log-driver json-file \
+	           --log-opt max-size=10m \
+	           --log-opt max-file=3 \
+	           compare_dns
 
 This command does the following:
 
