@@ -42,23 +42,23 @@ docker run -e DOMAIN="DOMAIN_TO_COMPARE_AND_UPDATE_TO" \
 	   --log-opt max-file=3 \
 	   compare_dns
 ```
-HOSTED_ZONE_ID: Your AWS Route 53 hosted zone ID.
-IAM_USER: Your AWS IAM user access key.
-IAM_KEY: Your AWS IAM user secret key.
-SCHEDULED_TIME: The time at which you want the code to run in HH:MM format.
-DOMAIN: The domain you want to update in your Route 53 hosted zone.
-AWS_PROFILE_NAME: An optional AWS CLI profile name (default is "myprofile").
+HOSTED_ZONE_ID: Your AWS Route 53 hosted zone ID.</br>
+IAM_USER: Your AWS IAM user access key.</br>
+IAM_KEY: Your AWS IAM user secret key.</br>
+SCHEDULED_TIME: The time at which you want the code to run in HH:MM format.</br>
+DOMAIN: The domain you want to update in your Route 53 hosted zone.</br>
+AWS_PROFILE_NAME: An optional AWS CLI profile name (default is "myprofile").</br>
 	
 #### Example .env File
 Create an .env file in the project directory with the following content:
 
-HOSTED_ZONE_ID=your-hosted-zone-id
-IAM_USER=your-iam-user-access-key
-IAM_KEY=your-iam-user-secret-key
-SCHEDULED_TIME=00:00
-DOMAIN=your-domain.com
-AWS_PROFILE_NAME=myprofile
-Running the DDNS Service
+HOSTED_ZONE_ID=your-hosted-zone-id</br>
+IAM_USER=your-iam-user-access-key</br>
+IAM_KEY=your-iam-user-secret-key</br>
+SCHEDULED_TIME=00:00</br>
+DOMAIN=your-domain.com</br>
+AWS_PROFILE_NAME=myprofile</br>
+Running the DDNS Service</br>
 
 Run the Docker container with the following command, ensuring that you mount the AWS CLI configuration and credentials files:
 ```
@@ -79,7 +79,7 @@ This command does the following:
 	ddns-service: The name of the Docker image.
 
 ## Monitoring
-The DDNS service will run periodically based on the SCHEDULED_TIME specified in your environment variables. 
+The DDNS service will run periodically based on the SCHEDULED_TIME specified in your environment variables. If no time is specifide or the format is invalid, it will default as 00:00 (Midnight)
 You can monitor the service's logs to see if it's updating the DNS records correctly:
 
 	docker logs -f ddns-service 
