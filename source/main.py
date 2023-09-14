@@ -130,6 +130,7 @@ def main():
 	schedule.every(2).minutes.do(run_job,last_ip,False)
 
 	print("\nLooks like we're good to do !\n")
+	schedule.run_all()
 	while True:
 		schedule.run_pending()
 		time.sleep(20)
