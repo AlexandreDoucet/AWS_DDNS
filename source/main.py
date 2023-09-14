@@ -59,7 +59,7 @@ def create_aws_profile(aws_user, aws_key):
 	aws_key_valid = False
 	while not aws_key_valid:
 		try:
-			subprocess.check_call(["aws", "--profile", CONFIG["AWS_PROFILE_NAME"], "configure", "get", "aws_access_key_id"])
+			subprocess.check_call(["aws", "--profile", CONFIG["AWS_PROFILE_NAME"], "configure", "get", "aws_access_key_id"],stdout=subprocess.DEVNULL)
 			print("AWS CLI is already configured with IAM credentials.")
 			aws_key_valid = True  # The key is valid, exit the loop
 		except subprocess.CalledProcessError:
