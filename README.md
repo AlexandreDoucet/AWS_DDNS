@@ -9,6 +9,7 @@ Before running the DDNS service, make sure you have the following prerequisites 
 - [AWS CLI](https://aws.amazon.com/cli/)
 - An AWS Route 53 hosted zone set up with the domain you want to update.
 - An AWS IAM user configures with permission for Route 53.
+- An Understanding of how to create and run docker containers.
 
 ## Getting Started
 1. Clone this GitHub repository to your local machine:</br>
