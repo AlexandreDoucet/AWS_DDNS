@@ -88,14 +88,16 @@ def run_job(mut_last_ip, forceCheck):
 			print("IP change detected")
 		elif(forceCheck):
 			print("Scheduled update")
-			
+			last_ip = ip
+
 		record_ip = socket.gethostbyname(domain)
-		last_ip = ip
+		print("Current record IP : " + record_ip)
 
 		if record_ip != ip:
 			print("IP should be updated from:" + str(record_ip) + " to " + str(ip))
 			subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
 			print("Record Updated: " + str(datetime.datetime.today()))
+			time.sleep(20)
 		else:
 			print("No update required : " + str(datetime.datetime.today()))
 		print("\n")
