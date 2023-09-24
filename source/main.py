@@ -81,18 +81,17 @@ def create_aws_profile(aws_user, aws_key):
 def run_job(mut_last_ip, forceCheck):
 	wait_for_internet_connection(True)
 	ip = requests.get(link).text.strip()
-	last_ip = mut_last_ip[0]
+	last_ip = mut_last_ip[0].strip()
 
 	if last_ip != ip or forceCheck:
 		if(last_ip != ip ):
 			print("IP change detected")
 		elif(forceCheck):
 			print("Scheduled update")
-			last_ip = ip
 
 		record_ip = socket.gethostbyname(domain)
 		print("Current record IP : " + record_ip)
-
+		print("Current Querry ip : " + ip)
 		if record_ip != ip:
 			print("IP should be updated from:" + str(record_ip) + " to " + str(ip))
 			subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
@@ -101,7 +100,7 @@ def run_job(mut_last_ip, forceCheck):
 		else:
 			print("No update required : " + str(datetime.datetime.today()))
 		print("\n")
-	mut_last_ip[0] = last_ip
+		mut_last_ip[0] = ip
 
 
 
@@ -113,7 +112,7 @@ def main():
 	aws_user,aws_key = get_aws_profile_info()
 	create_aws_profile(aws_user, aws_key)
 
-	last_ip = [""]
+	last_ip = [str("")]
 
 	# Define the specific time you want the code to run (replace with your desired time).
 	scheduled_time = CONFIG["SCHEDULED_TIME"].strip()  # Replace with your desired time in HH:MM format.
@@ -134,8 +133,8 @@ def main():
 	print("\nLooks like we're good to do !\n")
 	schedule.run_all()
 	while True:
-		schedule.run_pending()
 		time.sleep(20)
+		schedule.run_pending()
 
 
 if __name__ == "__main__":
