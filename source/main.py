@@ -22,11 +22,13 @@ domain = os.environ.get("DOMAIN", 'home.techtinkerhub.com')
 #logging.basicConfig(filename="ip_updater.log", level=logging.INFO)
 
 def check_internet_connection():
+	result = False
 	try:
 		subprocess.check_call(["ping", "-c", "1", "www.google.com"], stdout=subprocess.DEVNULL)
-		return True
+		result = True
 	except subprocess.CalledProcessError:
-		return False
+		result = False
+	return result
 
 # Causes the program to stall if the internet is down.
 def wait_for_internet_connection(quiet):
