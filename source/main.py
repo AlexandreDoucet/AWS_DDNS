@@ -79,30 +79,56 @@ def create_aws_profile(aws_user, aws_key):
 
 
 
+def FetchPublicIP():
+	ip_requested_success = False
+	ip= ""
+	retryCount = 10
+	while (not ip_requested_success and retryCount > 0):
+		retryCount = retryCount - 1
+		try:
+			ip = requests.get(link).text.strip()
+			if ip != "":
+				ip_requested_success = True
+			else:
+				print("Returned IP from AWS is empty.")
+		except Exception as e:
+			ip_requested_success = False
+			print("Error while fetching ip from AWS : " + str(e))
+
+		if(not ip_requested_success):
+			time.sleep(5)
+
+	return ip_requested_success,ip
+
 
 def run_job(mut_last_ip, forceCheck):
 	wait_for_internet_connection(True)
-	ip = requests.get(link).text.strip()
-	last_ip = mut_last_ip[0].strip()
+	ip_requested_success,ip = FetchPublicIP()
+	
+	if(not ip_requested_success):
+		print("Could not fetch public IP")
+	else:
+		last_ip = mut_last_ip[0].strip()
 
-	if last_ip != ip or forceCheck:
-		if(last_ip != ip ):
-			print("IP change detected")
-		elif(forceCheck):
-			print("Scheduled update")
+		if last_ip != ip or forceCheck:
+			if(last_ip != ip ):
+				print("IP change detected")
+			elif(forceCheck):
+				print("Scheduled update")
 
-		record_ip = socket.gethostbyname(domain)
-		print("Current record IP : " + record_ip)
-		print("Current Querry ip : " + ip)
-		if record_ip != ip:
-			print("IP should be updated from:" + str(record_ip) + " to " + str(ip))
-			subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
-			print("Record Updated: " + str(datetime.datetime.today()))
-			time.sleep(20)
-		else:
-			print("No update required : " + str(datetime.datetime.today()))
-		print("\n")
-		mut_last_ip[0] = ip
+			record_ip = socket.gethostbyname(domain)
+			print("Current record IP : " + record_ip)
+			print("Current Querry ip : " + ip)
+			if record_ip != ip:
+				print("IP should be updated from:" + str(record_ip) + " to " + str(ip))
+				subprocess.call(["sh", CONFIG["UPLOAD_SCRIPT"]])
+				print("Record Updated: " + str(datetime.datetime.today()))
+				time.sleep(20)
+			else:
+				print("No update required : " + str(datetime.datetime.today()))
+			print("\n")
+			mut_last_ip[0] = ip
+	
 
 
 

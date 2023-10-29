@@ -7,7 +7,9 @@ pip \
 setuptools \
 wheel
 
-run apt-get update && apt-get install -yy less
+
+run apt-get update
+run apt-get install -yy less
 run apt install unzip
 run apt-get install -y iputils-ping
 
